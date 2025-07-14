@@ -19,7 +19,7 @@ public class ItemEntity {
 
     private String product;
 
-    private String quantity;
+    private Integer quantity;
 
     @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal price;
