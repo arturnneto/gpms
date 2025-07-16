@@ -1,9 +1,12 @@
 package com.artur.gpms.service;
 
+import com.artur.gpms.data.dtos.OrderResponse;
 import com.artur.gpms.data.dtos.SaleOrderEvent;
 import com.artur.gpms.data.entities.ItemEntity;
 import com.artur.gpms.data.entities.SaleOrderEntity;
 import com.artur.gpms.data.repositories.SaleOrderRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -22,7 +25,7 @@ public class SaleOrderService {
         SaleOrderEntity saleOrderEntity = new SaleOrderEntity();
 
         saleOrderEntity.setOrderId(saleOrderEvent.orderId());
-        saleOrderEntity.setCustomerId(saleOrderEntity.getCustomerId());
+        saleOrderEntity.setCustomerId(saleOrderEvent.customerId());
         saleOrderEntity.setItemList(getSaleOrderItems(saleOrderEvent));
         saleOrderEntity.setTotalCost(getTotalOrderPrice(saleOrderEvent));
 
@@ -40,6 +43,12 @@ public class SaleOrderService {
                 .map(i -> i.price().multiply(BigDecimal.valueOf(i.quantity())))
                 .reduce(BigDecimal::add)
                 .orElse(BigDecimal.ZERO);
+    }
+
+    public Page<OrderResponse> findAllOrdersByCustomerId(Long customerId, PageRequest pageRequest) {
+        var orders = saleOrderRepository.findAllByCustomerId(customerId, pageRequest);
+
+        return orders.map(OrderResponse::fromEntity);
     }
 }
 
