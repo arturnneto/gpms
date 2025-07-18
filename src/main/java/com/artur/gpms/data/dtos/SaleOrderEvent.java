@@ -1,12 +1,15 @@
 package com.artur.gpms.data.dtos;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
 import java.math.BigDecimal;
 import java.util.List;
 
 public record SaleOrderEvent(
-        Long orderId,
-        Long customerId,
+        @NotNull @Positive Long customerId,
         BigDecimal totalCost,
-        List<ItemEntityEvent> itemList
+        @NotNull @Valid List<ItemEntityEvent> itemList
         ) {
 }

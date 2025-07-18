@@ -1,11 +1,15 @@
 package com.artur.gpms.data.dtos;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
 import java.math.BigDecimal;
 
 public record ItemEntityEvent(
-        String product,
-        Integer quantity,
-        BigDecimal price,
-        String description
+        @NotBlank String product,
+        @NotNull @Positive Integer quantity,
+        @NotNull @Positive BigDecimal price,
+        @NotBlank String description
         ) {
 }
