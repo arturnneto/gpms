@@ -21,7 +21,7 @@ import java.util.List;
 public class SaleOrderEntity {
 
     @MongoId
-    private Long orderId;
+    private String orderId;
 
     @Indexed(name = "customer_id_index")
     private Long customerId;
