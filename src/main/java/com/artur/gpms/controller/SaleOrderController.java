@@ -1,33 +1,52 @@
 package com.artur.gpms.controller;
 
-import com.artur.gpms.data.dtos.ApiResponse;
-import com.artur.gpms.data.dtos.OrderResponse;
+import com.artur.gpms.data.dtos.PaginatedSaleOrderResponse;
+import com.artur.gpms.data.dtos.SaleOrderResponse;
 import com.artur.gpms.data.dtos.PaginationResponse;
-import com.artur.gpms.service.SaleOrderService;
+import com.artur.gpms.data.dtos.SaleOrderEvent;
+import com.artur.gpms.data.entities.SaleOrderEntity;
+import com.artur.gpms.service.impl.SaleOrderServiceImpl;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 public class SaleOrderController {
 
-    private final SaleOrderService saleOrderService;
+    private final SaleOrderServiceImpl saleOrderService;
 
-    public SaleOrderController(SaleOrderService saleOrderService) {
+    public SaleOrderController(SaleOrderServiceImpl saleOrderService) {
         this.saleOrderService = saleOrderService;
     }
 
-    @GetMapping("/customers/{customerId}/orders")
-    public ResponseEntity<ApiResponse<OrderResponse>> listOrdersByCustomer(@PathVariable("customerId") Long customerId,
-                                                                           @RequestParam(name = "page", defaultValue = "0") Integer page,
-                                                                           @RequestParam(name = "page", defaultValue = "10") Integer pageSize) {
+    @GetMapping("/v1/orders/{orderId}")
+    public ResponseEntity<SaleOrderResponse> getOrderByOrderId(@PathVariable("orderId") String orderId) {
+        saleOrderService.checkIfOrderExist(orderId);
+        Optional<SaleOrderEntity> saleOrderEntity = saleOrderService.getSaleOrder(orderId);
 
-        var pageResponse = saleOrderService.findAllOrdersByCustomerId(customerId, PageRequest.of(page, pageSize));
+        return ResponseEntity.status(HttpStatus.OK).body(SaleOrderResponse.fromEntity(saleOrderEntity.get()));
+    }
 
-        return ResponseEntity.ok(new ApiResponse<>(
+    @PostMapping("/v1/orders")
+    public ResponseEntity<SaleOrderEvent> createSaleOrder(@Valid @RequestBody SaleOrderEvent saleOrderEvent) {
+        saleOrderService.publishSaleOrderEvent(saleOrderEvent);
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(saleOrderEvent);
+    }
+
+    @GetMapping("/v1/orders")
+    public ResponseEntity<PaginatedSaleOrderResponse<SaleOrderResponse>> getAllSaleOrders(@RequestParam(name = "page", defaultValue = "0") Integer page,
+                                                                                          @RequestParam(name = "size", defaultValue = "10") Integer pageSize) {
+
+        Page<SaleOrderEntity> pageEntity = saleOrderService.findAllOrders(PageRequest.of(page, pageSize));
+        Page<SaleOrderResponse> pageResponse = pageEntity.map(SaleOrderResponse::fromEntity);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new PaginatedSaleOrderResponse<>(
                 pageResponse.getContent(),
                 PaginationResponse.fromPage(pageResponse)
         ));

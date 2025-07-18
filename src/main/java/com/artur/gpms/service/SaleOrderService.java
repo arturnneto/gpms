@@ -1,54 +1,33 @@
 package com.artur.gpms.service;
 
-import com.artur.gpms.data.dtos.OrderResponse;
 import com.artur.gpms.data.dtos.SaleOrderEvent;
 import com.artur.gpms.data.entities.ItemEntity;
 import com.artur.gpms.data.entities.SaleOrderEntity;
-import com.artur.gpms.data.repositories.SaleOrderRepository;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
-@Service
-public class SaleOrderService {
 
-    private final SaleOrderRepository saleOrderRepository;
+public interface SaleOrderService {
 
-    public SaleOrderService(SaleOrderRepository saleOrderRepository) {
-        this.saleOrderRepository = saleOrderRepository;
-    }
 
-    public void saveSaleOrderEvent(SaleOrderEvent saleOrderEvent) {
-        SaleOrderEntity saleOrderEntity = new SaleOrderEntity();
+    Optional<SaleOrderEntity> getSaleOrder(String orderId);
 
-        saleOrderEntity.setOrderId(saleOrderEvent.orderId());
-        saleOrderEntity.setCustomerId(saleOrderEvent.customerId());
-        saleOrderEntity.setItemList(getSaleOrderItems(saleOrderEvent));
-        saleOrderEntity.setTotalCost(getTotalOrderPrice(saleOrderEvent));
+    void publishSaleOrderEvent(SaleOrderEvent saleOrderEvent);
 
-        saleOrderRepository.save(saleOrderEntity);
-    }
+    SaleOrderEntity createNewSaleOrderEntity(SaleOrderEvent saleOrderEvent);
 
-    private static List<ItemEntity> getSaleOrderItems(SaleOrderEvent saleOrderEvent) {
-        return saleOrderEvent.itemList().stream()
-                .map(i -> new ItemEntity(i.product(), i.quantity(), i.price(), i.description()))
-                .toList();
-    }
+    void saveSaleOrderEvent(SaleOrderEvent saleOrderEvent);
 
-    private BigDecimal getTotalOrderPrice(SaleOrderEvent saleOrderEvent) {
-        return saleOrderEvent.itemList().stream()
-                .map(i -> i.price().multiply(BigDecimal.valueOf(i.quantity())))
-                .reduce(BigDecimal::add)
-                .orElse(BigDecimal.ZERO);
-    }
+    List<ItemEntity> getSaleOrderItems(SaleOrderEvent saleOrderEvent);
 
-    public Page<OrderResponse> findAllOrdersByCustomerId(Long customerId, PageRequest pageRequest) {
-        var orders = saleOrderRepository.findAllByCustomerId(customerId, pageRequest);
+    BigDecimal getTotalOrderPrice(SaleOrderEvent saleOrderEvent);
 
-        return orders.map(OrderResponse::fromEntity);
-    }
+    Page<SaleOrderEntity> findAllOrders(Pageable pageable);
+
+    void checkIfOrderExist(String orderId);
 }
-
