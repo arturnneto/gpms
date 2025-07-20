@@ -9,7 +9,6 @@ import java.util.List;
 
 public record SaleOrderEvent(
         @NotNull @Positive Long customerId,
-        BigDecimal totalCost,
         @NotNull @Valid List<ItemEntityEvent> itemList
         ) {
 }

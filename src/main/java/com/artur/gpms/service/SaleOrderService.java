@@ -5,7 +5,6 @@ import com.artur.gpms.data.entities.ItemEntity;
 import com.artur.gpms.data.entities.SaleOrderEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.util.List;
