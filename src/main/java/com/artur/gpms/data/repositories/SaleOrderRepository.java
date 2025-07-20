@@ -8,7 +8,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.Optional;
 
 public interface SaleOrderRepository extends MongoRepository<SaleOrderEntity, Long> {
-    Page<SaleOrderEntity> findAllByCustomerId(Long customerId, Pageable pageable);
     Optional<SaleOrderEntity> findByOrderId(String orderId);
     Page<SaleOrderEntity> findAll(Pageable pageable);
 }
