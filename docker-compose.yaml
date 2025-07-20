@@ -1,17 +1,44 @@
 services:
+  app:
+    build: .
+    container_name: gpms
+    ports:
+      - '8080:8080'
+    depends_on:
+      - mongodb
+      - rabbitmq
+    environment:
+      SPRING_APPLICATION_NAME: gpms
+      SPRING_DATA_MONGODB_URI: mongodb://root:secret@mongodb:27017/gpmsdb?authSource=admin
+    networks:
+      - gpms-network
+
   mongodb:
     image: 'mongo:latest'
+    container_name: 'mongodb'
     environment:
-      - 'MONGO_INITDB_DATABASE=mydatabase'
+      - 'MONGO_INITDB_DATABASE=gpmsdb'
       - 'MONGO_INITDB_ROOT_PASSWORD=secret'
       - 'MONGO_INITDB_ROOT_USERNAME=root'
     ports:
-      - '27017'
+      - '27017:27017'
+    networks:
+      - gpms-network
+
   rabbitmq:
     image: 'rabbitmq:management'
+    container_name: 'rabbitmq'
     environment:
       - 'RABBITMQ_DEFAULT_PASS=secret'
       - 'RABBITMQ_DEFAULT_USER=myuser'
     ports:
-      - '15672'
-      - '5672'
+       - '15672:15672'
+       - '5672:5672'
+    networks:
+      - gpms-network
+
+networks:
+  gpms-network:
+    driver: bridge
+
+
